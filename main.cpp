@@ -70,10 +70,10 @@ float globalAmbient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
 float lightAmbient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 float lightDiffue[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 float lightSpecular[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-float* matAmb = utils.goldAmbient();
-float* matDif = utils.goldDiffuse();
-float* matSpe = utils.goldSpecular();
-float matShi = utils.goldShininess();
+float* matAmb = utils.jadeAmbient();
+float* matDif = utils.jadeDiffuse();
+float* matSpe = utils.jadeSpecular();
+float matShi = utils.jadeShininess();
 
 void setupVertices(void) {
 
@@ -240,13 +240,11 @@ void display(GLFWwindow* window, double currentTime) {
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
-
-	//glBindTexture(GL_TEXTURE_2D, myTexture);
 
 	glDrawArrays(GL_TRIANGLES, 0, mySphere.getNumIndices());
 }
