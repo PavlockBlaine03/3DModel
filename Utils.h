@@ -43,4 +43,10 @@ public:
 	float* bronzeDiffuse();
 	float* bronzeSpecular();
 	float bronzeShininess();
+
+	// Jade material
+	float* jadeAmbient();
+	float* jadeDiffuse();
+	float* jadeSpecular();
+	float jadeShininess();
 };

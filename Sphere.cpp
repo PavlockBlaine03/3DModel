@@ -12,7 +12,7 @@ void Sphere::init(int prec)
 
 	for (int i = 0; i <= prec; i++)
 	{
-		for (int j = 0; j < prec; j++)
+		for (int j = 0; j <= prec; j++)
 		{
 			float y = (float)cos(toRadians(180.0f - i * 180.0f / prec));
 			float x = -(float)cos(toRadians(j * 360.0f / prec)) * (float)abs(cos(asin(y)));
