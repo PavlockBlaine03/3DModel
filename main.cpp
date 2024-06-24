@@ -10,11 +10,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Utils.h"
 #include "Sphere.h"
+#include "ImportedModel.h"
 
 using namespace std;
 
 #define numVAOs 1
-#define numVBOs 3
+#define numVBOs 4
 
 const char* vertexShader = "vertShader.glsl";
 const char* fragmentShader = "fragShader.glsl";
@@ -27,7 +28,10 @@ GLuint vao[numVAOs];
 GLuint vbo[numVBOs];
 
 Sphere mySphere(48);
+
+ImportedModel myModel("Knife.obj");
 Utils utils;
+
 GLuint myTexture;
 
 GLuint mvLoc, projLoc, tfLoc;
@@ -39,32 +43,31 @@ float timeFactor;
 
 void setupVertices(void) {
 
-	std::vector<int> ind = mySphere.getIndices();
-	std::vector<glm::vec3> vert = mySphere.getVertices();
-	std::vector<glm::vec2> tex = mySphere.getTexCoords();
-	std::vector<glm::vec3> norm = mySphere.getNormals();
+	std::vector<glm::vec3> vert = myModel.getVertices();
+	std::vector<glm::vec2> tex = myModel.getTexCoords();
+	std::vector<glm::vec3> norm = myModel.getNormals();
+	int numObjVertices = myModel.getNumVertices();
 
 	std::vector<float> pvalues;
 	std::vector<float> tvalues;
 	std::vector<float> nvalues;
 
-	int numIndices = mySphere.getNumIndices();
-	for (int i = 0; i < numIndices; i++)
+	for (int i = 0; i < numObjVertices; i++)
 	{
-		pvalues.push_back((vert[ind[i]]).x);
-		pvalues.push_back((vert[ind[i]]).y);
-		pvalues.push_back((vert[ind[i]]).z);
+		pvalues.push_back((vert[i]).x);
+		pvalues.push_back((vert[i]).y);
+		pvalues.push_back((vert[i]).z);
 
-		tvalues.push_back((tex[ind[i]]).s);
-		tvalues.push_back((tex[ind[i]]).t);
+		tvalues.push_back((tex[i]).s);
+		tvalues.push_back((tex[i]).t);
 
-		nvalues.push_back((norm[ind[i]]).x);
-		nvalues.push_back((norm[ind[i]]).y);
-		nvalues.push_back((norm[ind[i]]).z);
+		nvalues.push_back((norm[i]).x);
+		nvalues.push_back((norm[i]).y);
+		nvalues.push_back((norm[i]).z);
 	}
-	glGenVertexArrays(1, vao);
+	glGenVertexArrays(numVAOs, vao);
 	glBindVertexArray(vao[0]);
-	glGenBuffers(3, vbo);
+	glGenBuffers(numVBOs, vbo);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, pvalues.size() * 4, &pvalues[0], GL_STATIC_DRAW);
@@ -79,18 +82,17 @@ void setupVertices(void) {
 
 void init(GLFWwindow* window) {
 	renderingProgram = utils.createShaderProgram(vertexShader, fragmentShader);
-	cameraX = 0.0f; cameraY = 0.0f; cameraZ = 5.0f;
-	sphereLocX = 0.0f; sphereLocY = 0.0f; sphereLocZ = 0.0f;
+	cameraX = 0.0f; cameraY = 0.0f; cameraZ = 6.0f;
+	sphereLocX = 1.0f; sphereLocY = 0.0f; sphereLocZ = 0.0f;
 	setupVertices();
 
 	glfwGetFramebufferSize(window, &width, &height);
 	aspect = (float)width / (float)height;
 	pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
 
-	myTexture = utils.loadTexture("earth.jpg");
+	myTexture = utils.loadTexture("img/Knife.png");
 }
 
-stack<glm::mat4> mvStack;
 void display(GLFWwindow* window, double currentTime) {
 
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -111,6 +113,8 @@ void display(GLFWwindow* window, double currentTime) {
 	glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat));
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
 
+	glBindVertexArray(vao[0]);
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -121,12 +125,17 @@ void display(GLFWwindow* window, double currentTime) {
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(2);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
-	glDrawArrays(GL_TRIANGLES, 0, mySphere.getNumIndices());
+
+	glBindTexture(GL_TEXTURE_2D, myTexture);
+
+	glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
+
+	glBindVertexArray(0);
 }
 
 int main(void){
