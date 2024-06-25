@@ -14,8 +14,8 @@
 
 using namespace std;
 
-#define numVAOs 1
-#define numVBOs 4
+#define numVAOs 2
+#define numVBOs 5
 
 GLuint renderingProgram;
 GLuint vao[numVAOs];
@@ -49,12 +49,13 @@ float lastY = 600.0f / 2.0;
 /*------------Objects and Textures--------------*/
 Sphere mySphere(48);
 glm::vec3 modelPos = glm::vec3(0.0f, 0.0f, 0.0f);
-ImportedModel myModel("obj/shape.obj");
+glm::vec3 cubePos = glm::vec3(0.0f, -3.0f, 0.0f);
+ImportedModel myModel("obj/Knife.obj");
 Utils utils;
-GLuint myTexture;
+GLuint cubeTexture;
 
 /*-----------------Matrices and location variables----------------------------------------*/
-GLuint mvLoc, projLoc, tfLoc, nLoc;
+GLuint mvLoc, projLoc, tfLoc, nLoc, objectTypeLoc;
 GLuint globalAmbLoc, ambLoc, diffLoc, specLoc, posLoc, mAmbLoc, mDiffLoc, mSpecLoc, mShiLoc;
 int width, height;
 float aspect;
@@ -76,6 +77,70 @@ float* matSpe = utils.jadeSpecular();
 float matShi = utils.jadeShininess();
 
 void setupVertices(void) {
+
+	float cubePositions[108] = {
+		-1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,
+		-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f
+	};
+	float cubeTexCoords[72] = {
+		// Front face
+		0.0f, 1.0f,
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+
+		// Right face
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 0.0f,
+
+		// Back face
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+
+		// Left face
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+
+		// Top face
+		0.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 1.0f,
+
+		// Bottom face
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 0.0f,
+		1.0f, 0.0f
+	};
 
 	std::vector<int> ind = mySphere.getIndices();
 	std::vector<glm::vec3> vert = mySphere.getVertices();
@@ -123,18 +188,47 @@ void setupVertices(void) {
 	//}
 
 	glGenVertexArrays(numVAOs, vao);
-	glBindVertexArray(vao[0]);
 	glGenBuffers(numVBOs, vbo);
 
+	// Sphere
+	glBindVertexArray(vao[0]);
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, pvalues.size() * 4, &pvalues[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, pvalues.size() * sizeof(float), pvalues.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, tvalues.size() * 4, &tvalues[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tvalues.size() * sizeof(float), tvalues.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, nvalues.size() * sizeof(float), nvalues.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(2);
 
+
+	// Cube
+	glBindVertexArray(vao[1]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubePositions), cubePositions, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeTexCoords), cubeTexCoords, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+
+	// Check for errors
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR) {
+		std::cerr << "OpenGL error: " << err << std::endl;
+	}
 }
 
 void init(GLFWwindow* window) {
@@ -145,7 +239,7 @@ void init(GLFWwindow* window) {
 	aspect = (float)width / (float)height;
 	pMat = glm::perspective(glm::radians(fov), aspect, 0.1f, 1000.0f);
 
-	myTexture = utils.loadTexture("img/earth.jpg");
+	cubeTexture = utils.loadTexture("img/grass.jpg");
 }
 
 void installLights(glm::mat4 vMatrix) {
@@ -207,12 +301,14 @@ void display(GLFWwindow* window, double currentTime) {
 	projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
 	tfLoc = glGetUniformLocation(renderingProgram, "tf");
 	nLoc = glGetUniformLocation(renderingProgram, "norm_matrix");
+	objectTypeLoc = glGetUniformLocation(renderingProgram, "objectType");
 
 	deltaTime = currentTime - lastTime;
 	lastTime = currentTime;
 
-
 	vMat = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+	//--------------------------------Sphere----------------------------------
 	mMat = glm::translate(glm::mat4(1.0f), glm::vec3(modelPos.x, modelPos.y, modelPos.z));
 	mMat *= glm::rotate(mMat, toRadians(35.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	mvMat = vMat * mMat;
@@ -227,26 +323,28 @@ void display(GLFWwindow* window, double currentTime) {
 	glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat));
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
 	glUniformMatrix4fv(nLoc, 1, GL_FALSE, glm::value_ptr(invTrMat));
+	glUniform1i(objectTypeLoc, 0);
 
 	glBindVertexArray(vao[0]);
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
 	glDrawArrays(GL_TRIANGLES, 0, mySphere.getNumIndices());
+
+
+	//--------------------Cube/Ground----------------------------------------
+	mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubePos.x, cubePos.y, cubePos.z));
+	mMat = glm::scale(mMat, glm::vec3(100.0f, 1.0f, 100.0f));
+	mvMat = vMat * mMat;
+	glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat));
+	glUniform1i(objectTypeLoc, 1);
+
+	glBindVertexArray(vao[1]);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {

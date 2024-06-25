@@ -25,6 +25,7 @@ struct Material
     float shininess;
 };
 
+uniform int objectType;
 uniform vec4 globalAmbient;
 uniform PositionalLight light;
 uniform Material material;
@@ -48,5 +49,10 @@ void main(void)
     vec3 diffuse = light.diffuse.xyz * material.diffuse.xyz * max(cosTheta, 0.0);
     vec3 specular = light.specular.xyz * material.specular.xyz * pow(max(cosPhi, 0.0f), material.shininess * 3.0);
 
-    fragColor = vec4((ambient + diffuse + specular), 1.0);
+    if(objectType == 1)
+    {
+        fragColor = texture(samp, tc);
+    }
+    else
+        fragColor = vec4((ambient + diffuse + specular), 1.0);
 }

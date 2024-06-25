@@ -1,5 +1,7 @@
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <cctype>
 #include <glm/glm.hpp>
 #include "ImportedModel.h"
 using namespace std;

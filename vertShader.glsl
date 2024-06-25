@@ -1,7 +1,8 @@
 #version 430
 
 layout(location = 0) in vec3 vertPos;
-layout(location = 1) in vec3 vertNormal;
+layout(location = 1) in vec2 vertTexCoord;
+layout(location = 2) in vec3 vertNormal;
 
 
 out vec2 tc;
@@ -27,6 +28,7 @@ struct Material
     float shininess;
 };
 
+uniform int objectType;
 uniform vec4 globalAmbient;
 uniform PositionalLight light;
 uniform Material material;
@@ -54,7 +56,14 @@ void main(void)
 
     mat4 newM_matrix = localRotY;
     mat4 v_matrix = mv_matrix * newM_matrix;
+
+    if(objectType == 1)
+    {
+        v_matrix = mv_matrix;
+    }
+
     gl_Position = proj_matrix * v_matrix * vec4(vertPos, 1.0);
+    tc = vertTexCoord;
 }
 
 mat4 buildTranslate(float x, float y, float z)
