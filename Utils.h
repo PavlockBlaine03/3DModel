@@ -25,6 +25,7 @@ public:
 	GLuint createShaderProgram(const char *vp, const char *tCS, const char *tES, const char *fp);
 	GLuint createShaderProgram(const char *vp, const char *tCS, const char *tES, const char *gp, const char *fp);
 	GLuint loadTexture(const char* texImagePath);
+	GLuint loadCubeMap(const char* mapDir);
 
 	// Gold material- ADS: ambient, diffuse, specular, and shininess
 	float* goldAmbient();

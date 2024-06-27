@@ -42,7 +42,7 @@ GLuint Utils::createShaderProgram(const char *vp, const char* fp) {
 	checkOpenGLError();
 	glGetProgramiv(vfProgram, GL_LINK_STATUS, &linked);
 	if (linked != 1) {
-		cout << "linking failed" << endl;
+		cout << "linking failed in shader " << vp << endl;
 		printProgramLog(vfProgram);
 	}
 	return vfProgram;
@@ -210,6 +210,28 @@ GLuint Utils::loadTexture(const char* texImagePath) {
 
 	if (textureID == 0) cout << "could not find texture file" << texImagePath << endl;
 	return textureID;
+}
+GLuint Utils::loadCubeMap(const char* mapDir)
+{
+	GLuint textureRef;
+
+	string xp = mapDir; xp = xp + "/xp.jpg";
+	string xn = mapDir; xn = xn + "/xn.jpg";
+	string yp = mapDir; yp = yp + "/yp.jpg";
+	string yn = mapDir; yn = yn + "/yn.jpg";
+	string zp = mapDir; zp = zp + "/zp.jpg";
+	string zn = mapDir; zn = zn + "/zn.jpg";
+
+	textureRef = SOIL_load_OGL_cubemap(xp.c_str(), xn.c_str(), yp.c_str(), yn.c_str(), 
+		zp.c_str(), zn.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+
+	if (textureRef == 0) cout << "did not find cube map image file" << endl;
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureRef);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	return textureRef;
 }
 string Utils::readShaderSource(const char* filePath) {
 	string content;
